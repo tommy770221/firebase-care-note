@@ -1,0 +1,12 @@
+specVersion: "v1beta"
+serviceId: "care-note-db"
+location: "asia-east1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "postgres"
+      cloudSql:
+        instanceId: "care-note-sql"
+      # schemaValidation: "COMPATIBLE"
+connectorDirs: ["./connector"]
