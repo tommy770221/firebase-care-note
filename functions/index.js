@@ -13,11 +13,8 @@ const axios = require("axios");
 const logger = require("firebase-functions/logger");
 // const {defineString} = require("firebase-functions/params");
 const dotenv = require("dotenv");
-
-// const admin = require('firebase-admin');
-// admin.initializeApp();
-// const db = admin.firestore();
-// env
+const admin = require("firebase-admin");
+admin.initializeApp();
 // https://firebase.google.com/docs/functions/get-started
 
 // eslint-disable-next-line max-len
@@ -28,29 +25,42 @@ exports.helloWorld = functions.https.onCall({region: "asia-east1", cors: ["http:
     const conversation = [
       {
         role: "user",
-        content: request.data,
+        content: request.data.message,
       },
     ];
-    const apiKey = dotenv.config().parsed.GROK_APIKEY;
+    const careGiverId= request.data.careGiverId;
+    const carePersonId= request.data.carePersonId;
+    const uid = request.data.uid;
+    const apiKey = dotenv.config().parsed.OPENAI_APIKEY;
     if (!conversation || !apiKey) {
       logger.error("Invalid request : ", conversation, apiKey);
       throw new functions.https.HttpsError("invalid-arg", "API Error");
     }
-    const url = dotenv.config().parsed.GROK_URL;
+    const url = dotenv.config().parsed.OPENAI_APIURL;
     const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
     };
     const body = {
       "messages": conversation,
-      "temperature": 0.7,
-      "model": "grok-2-latest",
+      "temperature": 0.1,
+      "model": "gpt-4o-mini",
       "stream": false,
       "store": true,
     };
     try {
       const response = await axios.post(url, body, {headers});
       if (response.status === 200) {
+        const post = {
+          "careGiverId": careGiverId,
+          "carePersonId": carePersonId,
+          "message": response.data.choices[0].message.content,
+          "createDate": admin.firestore.Timestamp.now(),
+          "recordDate": admin.firestore.Timestamp.now(),
+          "type": "activity",
+          "id": uid,
+        };
+        admin.firestore().collection("activities/"+carePersonId+"/activities/"+uid).set(post);
         return {response: response.data.choices[0].message.content};
       } else {
         logger.error(response);
