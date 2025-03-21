@@ -43,7 +43,7 @@ exports.helloWorld = functions.https.onCall({region: "asia-east1", cors: ["http:
     };
     const body = {
       "messages": conversation,
-      "temperature": 0.1,
+      "temperature": 0.2,
       "model": "gpt-4o-mini",
       "stream": false,
       "store": true,
