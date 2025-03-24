@@ -36,14 +36,14 @@ exports.helloWorld = functions.https.onCall({region: "asia-east1", cors: ["http:
       logger.error("Invalid request : ", conversation, apiKey);
       throw new functions.https.HttpsError("invalid-arg", "API Error");
     }
-    const url = dotenv.config().parsed.OPENAI_APIURL;
+    const url = dotenv.config().parsed.OPENAI_URL;
     const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
     };
     const body = {
       "messages": conversation,
-      "temperature": 0.2,
+      "temperature": 0.7,
       "model": "gpt-4o-mini",
       "stream": false,
       "store": true,
@@ -60,7 +60,7 @@ exports.helloWorld = functions.https.onCall({region: "asia-east1", cors: ["http:
           "type": "activity",
           "id": uid,
         };
-        admin.firestore().collection("activities/"+carePersonId+"/activities/"+uid).set(post);
+        admin.firestore().doc("activities/"+carePersonId+"/activities/"+uid).set(post);
         return {response: response.data.choices[0].message.content};
       } else {
         logger.error(response);
